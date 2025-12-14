@@ -11,6 +11,4 @@ app=FastAPI()
 
 @app.get('/students')
 def get_all_students():
-    # dict=json_to_dict_list(path_to_json)
-    # print(type(dict))
     return json_to_dict_list(path_to_json)

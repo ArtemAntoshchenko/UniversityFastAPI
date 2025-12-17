@@ -12,7 +12,7 @@ class Major(str, Enum):
     engineering = "Инженерия"
     languages = "Языки"
 
-class Student(BaseModel):
+class SchemStudent(BaseModel):
     student_id:int
     phone_number:str = Field(...,description="Номер телефона в международном формате, начинающийся с '+'")
     first_name: str = Field(..., min_length=1, max_length=50, description="Имя студента, от 1 до 50 символов")
@@ -23,4 +23,18 @@ class Student(BaseModel):
     enrollment_year: int = Field(..., ge=2002, description="Год поступления должен быть не меньше 2002")
     major: Major = Field(..., description="Специальность студента")
     course: int = Field(..., ge=1, le=5, description="Курс должен быть в диапазоне от 1 до 5")
-    special_notes: Optional[str] = Field(default=None, max_length=500, description="Дополнительные заметки, не более 500 символов")       
+    special_notes: Optional[str] = Field(default=None, max_length=500, description="Дополнительные заметки, не более 500 символов")
+
+    @field_validator('phone_number')
+    @classmethod
+    def phone_number_validator(cls,value:str)->str:
+        if not re.match(r'^\+\d{1,15}$',value):
+            raise ValueError('Номер должен начинаться с "+" и содержать цифры от 1 до 15')
+        return value
+    
+    @field_validator('date_of_birth')
+    @classmethod
+    def date_of_birth_validator(cls,value:date)->date:
+        if value and value>=datetime.now().date():
+            raise ValueError('Дата рождения должна быть в прошлом')
+        return value

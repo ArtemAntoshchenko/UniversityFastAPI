@@ -1,40 +1,40 @@
-from enum import Enum
-from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationError
-from datetime import date, datetime
-from typing import Optional
-import re
+from sqlalchemy import ForeignKey, text, Text
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from app.database import Base, str_uniq, int_pk, str_null_true
+from datetime import date
 
-class Major(str, Enum):
-    informatics = "Информатика"
-    economics = "Экономика"
-    law = "Право"
-    medicine = "Медицина"
-    engineering = "Инженерия"
-    languages = "Языки"
+class Student(Base):
+    id: Mapped[int_pk]
+    phone_number: Mapped[str_uniq]
+    first_name: Mapped[str]
+    last_name: Mapped[str]
+    date_of_birth: Mapped[date]
+    email: Mapped[str_uniq]
+    address: Mapped[str] = mapped_column(Text, nullable=False)
+    enrollment_year: Mapped[int]
+    course: Mapped[int]
+    special_notes: Mapped[str_null_true]
+    major_id: Mapped[int] = mapped_column(ForeignKey("majors.id"), nullable=False)
 
-class SchemStudent(BaseModel):
-    student_id:int
-    phone_number:str = Field(...,description="Номер телефона в международном формате, начинающийся с '+'")
-    first_name: str = Field(..., min_length=1, max_length=50, description="Имя студента, от 1 до 50 символов")
-    last_name: str = Field(..., min_length=1, max_length=50, description="Фамилия студента, от 1 до 50 символов")
-    date_of_birth: date = Field(..., description="Дата рождения студента в формате ГГГГ-ММ-ДД")
-    email: EmailStr = Field(..., description="Электронная почта студента")
-    address: str = Field(..., min_length=10, max_length=200, description="Адрес студента, не более 200 символов")
-    enrollment_year: int = Field(..., ge=2002, description="Год поступления должен быть не меньше 2002")
-    major: Major = Field(..., description="Специальность студента")
-    course: int = Field(..., ge=1, le=5, description="Курс должен быть в диапазоне от 1 до 5")
-    special_notes: Optional[str] = Field(default=None, max_length=500, description="Дополнительные заметки, не более 500 символов")
+    major: Mapped["Major"] = relationship("Major", back_populates="students")
 
-    @field_validator('phone_number')
-    @classmethod
-    def phone_number_validator(cls,value:str)->str:
-        if not re.match(r'^\+\d{1,15}$',value):
-            raise ValueError('Номер должен начинаться с "+" и содержать цифры от 1 до 15')
-        return value
+    def __str__(self):
+        return (f"{self.__class__.__name__}(id={self.id},"
+                f"first_name={self.first_name!r},"
+                f"last_name={self.last_name!r})")
+
+    def __repr__(self):
+        return str(self)
     
-    @field_validator('date_of_birth')
-    @classmethod
-    def date_of_birth_validator(cls,value:date)->date:
-        if value and value>=datetime.now().date():
-            raise ValueError('Дата рождения должна быть в прошлом')
-        return value
+class Major(Base):
+    id: Mapped[int_pk]
+    major_name: Mapped[str_uniq]
+    major_description: Mapped[str_null_true]
+    count_students: Mapped[int] = mapped_column(server_default=text('0'))
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(id={self.id}, major_name={self.major_name!r})"
+
+    def __repr__(self):
+        return str(self)
+

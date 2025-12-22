@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from utils import *
 from typing import Optional, List
 import os
-from app.students.models import SchemStudent
+from app.students.scheme import SchemStudent
 
 script_dir=os.path.dirname(os.path.abspath(__file__))
 parent_dir=os.path.dirname(script_dir)

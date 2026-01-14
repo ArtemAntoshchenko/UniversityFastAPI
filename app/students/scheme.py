@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationError
+from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationError, ConfigDict
 from datetime import date, datetime
 from typing import Optional
 import re
@@ -13,6 +13,7 @@ class Major(str, Enum):
     languages = "Языки"
 
 class SchemStudent(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     student_id:int
     phone_number:str = Field(...,description="Номер телефона в международном формате, начинающийся с '+'")
     first_name: str = Field(..., min_length=1, max_length=50, description="Имя студента, от 1 до 50 символов")

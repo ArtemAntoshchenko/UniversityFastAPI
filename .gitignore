@@ -1,3 +1,4 @@
 FastVenv
 alembic.ini
-app/migration
+app/alembic
+.env
